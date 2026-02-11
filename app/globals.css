@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+:root {
+  --brand-primary: #5A3426;
+  --brand-primary-hover: #4E2D21;
+  --brand-accent: #E04428;
+  --brand-accent-hover: #C73B22;
+  --brand-bg: #FBF6F2;
+  --brand-card: #FFFFFF;
+  --brand-border: #E6DCD6;
+  --brand-text: #231A16;
+  --brand-muted: rgba(35, 26, 22, 0.66);
+  --brand-soft: rgba(35, 26, 22, 0.48);
+  --brand-accent-soft: color-mix(in srgb, var(--brand-accent) 12%, white);
+  --brand-primary-soft: color-mix(in srgb, var(--brand-primary) 10%, white);
+
+  --bm-primary: var(--brand-primary);
+  --bm-accent: var(--brand-accent);
+  --bm-accent-hover: var(--brand-accent-hover);
+  --bm-bg: var(--brand-bg);
+  --bm-border: var(--brand-border);
+  --bm-text: var(--brand-text);
+  --bm-card: var(--brand-card);
+  --bm-text-muted: var(--brand-muted);
+  --bm-text-soft: var(--brand-soft);
+  --bm-accent-soft: var(--brand-accent-soft);
+  --bm-primary-soft: var(--brand-primary-soft);
+}
+
+@theme inline {
+  --color-background: var(--bm-bg);
+  --color-foreground: var(--bm-text);
+  --color-primary: var(--bm-primary);
+  --color-accent: var(--bm-accent);
+  --color-border: var(--bm-border);
+  --color-card: var(--bm-card);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-border: var(--brand-border);
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-card: var(--brand-card);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+}
+
+body {
+  margin: 0;
+  background-color: var(--bm-bg);
+  color: var(--bm-text);
+  font-family: var(--font-body), system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading), serif;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+p,
+label,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+small,
+.text-xs,
+.text-sm {
+  letter-spacing: 0.03em;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background-color: var(--bm-accent);
+  color: #ffffff;
+}
+
+/* Brand utility classes for direct usage in components */
+.text-brand {
+  color: var(--brand-primary);
+}
+
+.text-accent {
+  color: var(--brand-accent);
+}
+
+.bg-brand {
+  background-color: var(--brand-primary);
+}
+
+.bg-brand-hover:hover {
+  background-color: var(--brand-primary-hover);
+}
+
+.bg-accent {
+  background-color: var(--brand-accent);
+}
+
+.bg-accent-hover:hover {
+  background-color: var(--brand-accent-hover);
+}
+
+.bg-brand-soft {
+  background-color: var(--brand-primary-soft);
+}
+
+.bg-accent-soft {
+  background-color: var(--brand-accent-soft);
+}
+
+.border-brand {
+  border-color: var(--brand-primary);
+}
+
+.border-accent {
+  border-color: var(--brand-accent);
+}
+
+.ring-accent:focus-visible {
+  --tw-ring-color: var(--brand-accent);
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-accent) 30%, transparent);
+}
+
+html,
+body {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#__next {
+  min-height: 100%;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(222, 66, 38, 0.45) rgba(231, 225, 221, 0.7);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 7px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--bm-border);
+  border-radius: 999px;
+  box-shadow: inset 0 0 10px rgba(31, 27, 24, 0.08);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(222, 66, 38, 0.45);
+  border-radius: 999px;
+  box-shadow: inset 0 0 5px rgba(31, 27, 24, 0.18);
+}
+
+.cameraFrame {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--bm-primary-soft, #f2ecea);
+}
+
+.cameraFrame video,
+.cameraFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.mirror {
+  transform: scaleX(-1);
+}
+
+.cameraCard {
+  position: relative;
+  width: 100%;
+  display: grid;
+  gap: 12px;
+}
+
+.cameraMediaLayer {
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.cameraActions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
