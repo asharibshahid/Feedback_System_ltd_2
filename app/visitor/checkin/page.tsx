@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { ScrollPanel } from "@/components/ui/ScrollPanel";
 import { Dialog } from "@/components/ui/shadcn/Dialog";
-import { Sheet } from "@/components/ui/shadcn/Sheet";
 import { RadioGroup } from "@/components/ui/shadcn/RadioGroup";
 import { Select } from "@/components/ui/shadcn/Select";
 import { Switch } from "@/components/ui/shadcn/Switch";
@@ -84,14 +83,6 @@ const entryLaneOptions = [
 
 const progressRadius = 56;
 const progressCircumference = 2 * Math.PI * progressRadius;
-
-type SmartHint = {
-  title: string;
-  detail: string;
-  sectionIndex: number;
-  tone: "info" | "warning" | "success";
-  buttonLabel: string;
-};
 
 const buildTestimonialLink = (visitId: string) => {
   if (typeof window !== "undefined" && window.location.origin) {
@@ -179,61 +170,6 @@ export default function VisitorCheckinPage() {
   }, [identityComplete, visitDetailsComplete, selfieComplete, allNormsAccepted, consentComplete]);
 
   const isAllComplete = identityComplete && visitDetailsComplete && selfieComplete && allNormsAccepted && consentComplete;
-
-  const smartHint = useMemo<SmartHint>(() => {
-    if (!identityComplete) {
-      return {
-        title: "Identity incomplete",
-        detail: "Add your full name and mobile so the gate team can issue a badge instantly.",
-        sectionIndex: 0,
-        tone: "warning",
-        buttonLabel: "Finish identity",
-      };
-    }
-    if (!visitDetailsComplete) {
-      return {
-        title: "Visit details in review",
-        detail: "Select a host, purpose, and entry lane before moving forward.",
-        sectionIndex: 1,
-        tone: "warning",
-        buttonLabel: "Describe visit",
-      };
-    }
-    if (healthAlert) {
-      return {
-        title: "Health flags detected",
-        detail: "An alert was raised. HACCP may review before granting access.",
-        sectionIndex: 2,
-        tone: "warning",
-        buttonLabel: "Review health",
-      };
-    }
-    if (!selfie.snapshot) {
-      return {
-        title: "Selfie missing",
-        detail: "Capture your photo so the security team can confirm your identity.",
-        sectionIndex: 3,
-        tone: "info",
-        buttonLabel: "Grab selfie",
-      };
-    }
-    if (!consentComplete) {
-      return {
-        title: "Consent required",
-        detail: "Authorize data usage to unlock the submit control.",
-        sectionIndex: 5,
-        tone: "info",
-        buttonLabel: "Grant consent",
-      };
-    }
-    return {
-      title: "Ready for the gate",
-      detail: "All sections are aligned. Hit submit when ready.",
-      sectionIndex: 5,
-      tone: "success",
-      buttonLabel: "Submit now",
-    };
-  }, [allNormsAccepted, consentComplete, healthAlert, identityComplete, visitDetailsComplete, selfie.snapshot]);
 
   const progressOffset = progressCircumference - (completionPercent / 100) * progressCircumference;
 
@@ -636,15 +572,9 @@ export default function VisitorCheckinPage() {
     return "border-[color:var(--bm-border)]";
   };
 
-  const hintToneStyles: Record<SmartHint["tone"], string> = {
-    info: "border-[color:var(--bm-accent)] bg-[color:var(--bm-accent-soft)]",
-    warning: "border-[color:var(--bm-accent)] bg-[color:var(--bm-accent-soft)]",
-    success: "border-[color:var(--bm-primary)] bg-[color:var(--bm-primary-soft)]",
-  };
-
   return (
     <div className="relative min-h-screen bg-[color:var(--bm-bg)]">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 pb-32">
+      <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-6 px-4 py-6 pb-32 md:px-6 lg:px-8">
         <header className="grid gap-5 rounded-[28px] border border-[color:var(--bm-border)] bg-white/70 p-6 shadow-[0_40px_80px_rgba(15,23,42,0.15)] backdrop-blur-3xl lg:grid-cols-[minmax(0,1fr)_200px]">
           <div className="space-y-3">
             <p className="text-xs uppercase tracking-[0.4em] text-[color:var(--bm-text-soft)]">Visitor command center</p>
@@ -727,15 +657,15 @@ export default function VisitorCheckinPage() {
             {submitError}
           </div>
         )}
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
-            <div className="space-y-4">
-              <ScrollPanel
-                ref={scrollContainerRef}
-                panelStyle={{ height: "78vh" }}
+        <div className="grid gap-6">
+          <div className="space-y-4">
+            <ScrollPanel
+              ref={scrollContainerRef}
+              panelStyle={{ height: "78vh" }}
               panelClassName="space-y-6 pb-32"
               className="border border-white/70 bg-white/60"
             >
-                {sectionLabels.map((section, index) => (
+              {sectionLabels.map((section, index) => (
                 <motion.section
                   key={section.id}
                   ref={
@@ -743,8 +673,8 @@ export default function VisitorCheckinPage() {
                       ? identityRef
                       : index === 1
                         ? visitDetailsRef
-                        : index === 2
-                          ? healthRef
+                          : index === 2
+                            ? healthRef
                           : index === 3
                             ? selfieRef
                             : consentRef
@@ -995,7 +925,7 @@ export default function VisitorCheckinPage() {
                         <div className="space-y-5">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-xs uppercase tracking-[0.4em] text-[color:var(--bm-text-soft)]">Visitor's Photo</p>
+                              <p className="text-xs uppercase tracking-[0.4em] text-[color:var(--bm-text-soft)]">Visitor photo</p>
                               <h2 className="text-xl font-semibold text-[color:var(--bm-text)]">Selfie capture</h2>
                             </div>
                             <button
@@ -1100,57 +1030,6 @@ export default function VisitorCheckinPage() {
             </ScrollPanel>
           </div>
 
-          <aside className="hidden flex-col gap-4 lg:flex">
-            <GlassPanel className={`space-y-3 ${hintToneStyles[smartHint.tone]}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.4em] text-[color:var(--bm-text-muted)]">AI hints</p>
-                  <h3 className="text-lg font-semibold text-[color:var(--bm-text)]">{smartHint.title}</h3>
-                </div>
-                <motion.span className="h-3 w-3 rounded-full bg-[color:var(--bm-accent)]" animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 1.8, repeat: Infinity }} />
-              </div>
-              <p className="text-sm text-[color:var(--bm-text-muted)]">{smartHint.detail}</p>
-              <button
-                type="button"
-                onClick={() => scrollToSection(smartHint.sectionIndex)}
-                className="w-full rounded-[14px] border border-[color:var(--bm-primary)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--bm-primary)] transition hover:bg-[color:var(--bm-primary-soft)]"
-              >
-                {smartHint.buttonLabel}
-              </button>
-            </GlassPanel>
-            <GlassPanel className="space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-xs uppercase tracking-[0.4em] text-[color:var(--bm-text-soft)]">Section tracker</p>
-                <span className="text-xs text-[color:var(--bm-text-muted)]">Tap to jump</span>
-              </div>
-              <div className="space-y-2">
-                {sectionLabels.map((section, index) => {
-                  const complete = isSectionComplete(index);
-                  return (
-                    <button
-                      key={section.id}
-                      type="button"
-                      onClick={() => scrollToSection(index)}
-                      className={`flex w-full items-center justify-between rounded-[16px] border px-3 py-2 text-left text-sm text-[color:var(--bm-text)] transition ${
-                        activeSection === index ? "border-accent bg-accent-soft" : "border-[color:var(--bm-border)] bg-white/70"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`h-2.5 w-2.5 rounded-full ${complete ? "bg-[#16A34A]" : "bg-[color:var(--bm-border)]"}`} />
-                        <div>
-                          <p className="text-xs uppercase tracking-[0.4em] text-[color:var(--bm-text-soft)]">Step {index + 1}</p>
-                          <p className="font-semibold text-[color:var(--bm-text)]">{section.label}</p>
-                        </div>
-                      </div>
-                      <span className="text-[0.6rem] font-semibold uppercase tracking-[0.4em] text-[color:var(--bm-text-soft)]">
-                        {complete ? "Done" : "Open"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </GlassPanel>
-          </aside>
         </div>
       </div>
 
@@ -1182,3 +1061,4 @@ export default function VisitorCheckinPage() {
     </div>
   );
 }
+
