@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import Link from "next/link";
 import { SyntheticEvent, useEffect, useMemo, useState } from "react";
@@ -490,7 +490,7 @@ export default function AdminVisitorsPage() {
       render: SectionRenderer,
     ) => {
       const headerH = 18;
-      const bodyPad = 10;
+      const bodyPad = 12;
       const contentStartY = params.y + headerH + bodyPad;
       const contentHeight = render(contentStartY, true);
       const totalH = headerH + bodyPad * 2 + contentHeight;
@@ -632,12 +632,10 @@ export default function AdminVisitorsPage() {
       currentY = await drawHeader(doc, marginX, currentY, pageWidth);
       currentY += 16;
 
-      let leftY = currentY;
-      let rightY = currentY;
-
-      leftY = drawSectionBox(
+      // Row 1: Identity (left) + Visit (right)
+      const identityBottom = drawSectionBox(
         doc,
-        { title: "Identity", x: marginX, y: leftY, width: columnWidth },
+        { title: "Identity", x: marginX, y: currentY, width: columnWidth },
         (startY, dryRun) =>
           drawKeyValueRows(
             doc,
@@ -653,77 +651,9 @@ export default function AdminVisitorsPage() {
           ),
       );
 
-      leftY = drawSectionBox(
+      const visitBottom = drawSectionBox(
         doc,
-        { title: "Health", x: marginX, y: leftY, width: columnWidth },
-        (startY, dryRun) =>
-          drawHealthList(
-            doc,
-            detailVisitor.healthAnswers ?? null,
-            marginX + 12,
-            startY,
-            dryRun,
-          ),
-      );
-
-      leftY = drawSectionBox(
-        doc,
-        { title: "Site Norms", x: marginX, y: leftY, width: columnWidth },
-        (startY, dryRun) => {
-          const x = marginX + 12;
-
-          const lineGap = 16; // match Health spacing
-          const labelX = x + 9;
-          const tickX = x + 180;
-          const maxTextWidth = tickX - 12 - labelX;
-
-          const fitSingleLine = (value: string) => {
-            const ellipsis = "...";
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-
-            if (doc.getTextWidth(value) <= maxTextWidth) return value;
-
-            let trimmed = value;
-            while (trimmed.length > 0 && doc.getTextWidth(trimmed + ellipsis) > maxTextWidth) {
-              trimmed = trimmed.slice(0, -1);
-            }
-            return trimmed ? trimmed + ellipsis : value;
-          };
-
-          let cursorY = startY;
-
-          SITE_NORMS_LINES.forEach((line) => {
-            const text = fitSingleLine(line);
-
-            if (!dryRun) {
-              // left text (muted like Health labels)
-              doc.setFont("helvetica", "normal");
-              doc.setFontSize(10);
-              doc.setTextColor(...COLOR_MUTED);
-              doc.text(text, labelX, cursorY);
-
-              // right tick using ZapfDingbats checkmark
-              doc.setFont("zapfdingbats", "normal");
-              doc.setFontSize(12);
-              doc.setTextColor(34, 197, 94);
-              doc.text("4", tickX, cursorY);
-
-              // restore default font/color
-              doc.setFont("helvetica", "normal");
-              doc.setTextColor(...COLOR_TEXT);
-            }
-
-            cursorY += lineGap;
-          });
-
-          return cursorY - startY;
-        },
-      );
-
-      rightY = drawSectionBox(
-        doc,
-        { title: "Visit", x: marginX + columnWidth + gutter, y: rightY, width: columnWidth },
+        { title: "Visit", x: marginX + columnWidth + gutter, y: currentY, width: columnWidth },
         (startY, dryRun) => {
           const rows: Array<[string, string]> = [
             ["Host", detailVisitor.meetingWith || "N/A"],
@@ -744,9 +674,25 @@ export default function AdminVisitorsPage() {
         },
       );
 
-      rightY = await drawSectionBox(
+      currentY = Math.max(identityBottom, visitBottom);
+
+      // Row 2: Health (left) + Selfie (right)
+      const healthBottom = drawSectionBox(
         doc,
-        { title: "Selfie", x: marginX + columnWidth + gutter, y: rightY, width: columnWidth },
+        { title: "Health", x: marginX, y: currentY, width: columnWidth },
+        (startY, dryRun) =>
+          drawHealthList(
+            doc,
+            detailVisitor.healthAnswers ?? null,
+            marginX + 12,
+            startY,
+            dryRun,
+          ),
+      );
+
+      const selfieBottom = await drawSectionBox(
+        doc,
+        { title: "Selfie", x: marginX + columnWidth + gutter, y: currentY, width: columnWidth },
         (startY, dryRun) => {
           const box = {
             x: marginX + columnWidth + gutter + 12,
@@ -778,6 +724,60 @@ export default function AdminVisitorsPage() {
             }
           }
           return box.h;
+        },
+      );
+
+      currentY = Math.max(healthBottom, selfieBottom);
+
+      // Row 3: Site norms full width
+      drawSectionBox(
+        doc,
+        { title: "Site Norms", x: marginX, y: currentY, width: pageWidth - marginX * 2 },
+        (startY, dryRun) => {
+          const baseX = marginX + 12;
+          const lineGap = 18;
+          const labelX = baseX + 9;
+          const tickX = marginX + (pageWidth - marginX * 2) - 24;
+          const maxTextWidth = tickX - labelX - 10;
+
+          const fitSingleLine = (value: string) => {
+            const ellipsis = "...";
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+
+            if (doc.getTextWidth(value) <= maxTextWidth) return value;
+
+            let trimmed = value;
+            while (trimmed.length > 0 && doc.getTextWidth(trimmed + ellipsis) > maxTextWidth) {
+              trimmed = trimmed.slice(0, -1);
+            }
+            return trimmed ? trimmed + ellipsis : value;
+          };
+
+          let cursorY = startY;
+
+          SITE_NORMS_LINES.forEach((line) => {
+            const text = fitSingleLine(line);
+
+            if (!dryRun) {
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(10);
+              doc.setTextColor(...COLOR_MUTED);
+              doc.text(text, labelX, cursorY);
+
+              doc.setFont("zapfdingbats", "normal");
+              doc.setFontSize(12);
+              doc.setTextColor(34, 197, 94);
+              doc.text("4", tickX, cursorY);
+
+              doc.setFont("helvetica", "normal");
+              doc.setTextColor(...COLOR_TEXT);
+            }
+
+            cursorY += lineGap;
+          });
+
+          return cursorY - startY;
         },
       );
 
@@ -1021,6 +1021,11 @@ export default function AdminVisitorsPage() {
     </div>
   );
 }
+
+
+
+
+
 
 
 
